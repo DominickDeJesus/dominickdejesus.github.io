@@ -1,4 +1,44 @@
-#welcome{
+body{
+  max-width: 500px;
+  margin: 0 auto 0 auto;
   font-size: 48px;
-  color: rgb(88, 196, 234);
+  font-family: Tahoma, Geneva, sans-serif;
+  font: bolder;
+}
+
+
+#home{
+  background-color: #0B67E2;
+    display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+li{
+  max-width: 500px;
+  margin: 0 auto 0 auto;
+  border-color: aliceblue;
+}
+a{
+  color: #000003;
+  text-decoration: none;
+}
+
+.center{
+  padding-top: 30px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+#construction{
+  color: ffff;
+  display: block;
+}
+
+#dmlogo{
+  padding: 50px;
+  text-align: center;
+  display: block;
 }
