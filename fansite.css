@@ -1,44 +1,54 @@
-body{
-  max-width: 500px;
-  margin: 0 auto 0 auto;
-  font-size: 48px;
-  font-family: Tahoma, Geneva, sans-serif;
-  font: bolder;
+*{
+  border-style: none;
+  padding: 0px;
+  margin: 0px;
 }
 
 
 #home{
-  background-color: #0B67E2;
-    display: block;
-  margin-left: auto;
-  margin-right: auto;
-  width: 50%;
+
+  max-height: 100%;
+  font-size: 48px;
+  font-family: Tahoma, Geneva, sans-serif;
+  font: bolder;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background-color: #014CFD;
 }
 
-li{
-  max-width: 500px;
-  margin: 0 auto 0 auto;
-  border-color: aliceblue;
+#container{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 25px 25px;
+  border-color: green;
 }
+
+ul {
+  padding-top: 50px;
+  padding: 60px;
+  width: 280px;
+}
+.comingsoon{
+    width: auto;
+    height: auto;
+    object-fit: contain; 
+}
+
 a{
   color: #000003;
   text-decoration: none;
 }
 
-.center{
-  padding-top: 30px;
-  margin-left: auto;
-  margin-right: auto;
-  width: 100%;
-}
-
 #construction{
   color: ffff;
-  display: block;
-}
-
-#dmlogo{
-  padding: 50px;
-  text-align: center;
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 75%;
+  width: auto;
+  object-fit: contain;
 }
