@@ -100,8 +100,9 @@ body::before{
   font-style:italic;transition:color 0.4s;
 }
 .place-num.first {color:#FFD700;}
-.place-num.second{color:#E8E8E8;}
+.place-num.second{color:#C0C0C0;}
 .place-num.third {color:#F07020;}
+.place-num.fourth{color:#4CD137;}
 
 .portrait-wrap{
   flex-shrink:0;width:140px;height:140px;
@@ -268,6 +269,14 @@ function sorted(arr){
   var out=[];
   for(var i=0;i<arr.length;i++) out.push({name:arr[i].name,yi:arr[i].yi,coins:arr[i].coins,origIdx:i});
   out.sort(function(a,b){return b.coins-a.coins;});
+  // Assign tied ranks: same coins = same rank
+  var tiedRank = 0;
+  for(var i=0;i<out.length;i++){
+    if(i===0 || out[i].coins !== out[i-1].coins){
+      tiedRank = i; // rank = position of first team with this score
+    }
+    out[i].rank = tiedRank;
+  }
   return out;
 }
 
@@ -300,8 +309,15 @@ function renderBoard(animateCoins){
   for(var rank=0;rank<s.length;rank++){
     var t      = s[rank];
     var topPx  = topPad + rank * (ROW_H + ROW_GAP);
-    var lbl    = rank===0 ? "No change!" : rank<=2 ? "Moving up!" : "";
-    var numCls = ["first","second","third"][rank] || "";
+    var lbl = "";
+    if(animateCoins){
+      var prev = prevRanks[String(t.origIdx)];
+      if(prev === undefined) lbl = "";
+      else if(prev === rank) lbl = "No change!";
+      else if(rank < prev) lbl = "Moving up!";
+      else lbl = "Moving down...";
+    }
+    var numCls = ["first","second","third","fourth"][t.rank] || "";
     var key    = String(t.origIdx);
     var el     = existing[key];
 
@@ -322,7 +338,7 @@ function renderBoard(animateCoins){
       } else {
         if(lblEl) lblEl.parentNode.removeChild(lblEl);
       }
-      el.querySelector(".place-num").textContent = PLACES[rank];
+      el.querySelector(".place-num").textContent = PLACES[t.rank];
       el.querySelector(".place-num").className   = "place-num " + numCls;
       var cc = el.querySelector(".coin-count");
       var nv = String(t.coins);
@@ -339,13 +355,21 @@ function renderBoard(animateCoins){
     delete existing[key];
   }
   for(var k in existing) existing[k].parentNode.removeChild(existing[k]);
+
+  // Update prevRanks for next call
+  if(animateCoins){
+    for(var rank=0;rank<s.length;rank++) prevRanks[String(s[rank].origIdx)] = rank;
+  } else if(Object.keys(prevRanks).length === 0){
+    // Store initial ranks on first load
+    for(var rank=0;rank<s.length;rank++) prevRanks[String(s[rank].origIdx)] = rank;
+  }
 }
 
 function makeRow(t, rank, lbl, numCls){
   return '<div class="pending-dot"></div>'+
     (lbl ? '<div class="place-label">'+lbl+'</div>' : '')+
     '<div class="row-inner">'+
-      '<div class="place-col"><div class="place-num '+numCls+'">'+PLACES[rank]+'</div></div>'+
+      '<div class="place-col"><div class="place-num '+numCls+'">'+PLACES[t.rank]+'</div></div>'+
       '<div class="portrait-wrap"><img src="'+YOSHI_IMGS[t.yi%4]+'" alt="'+t.name+'"></div>'+
       '<div class="player-name">'+t.name+'</div>'+
       '<div class="coin-display">'+
@@ -388,6 +412,8 @@ function closeEdit(){ document.getElementById("edit-overlay").classList.remove("
 function savePending(){
   pending=[];
   for(var i=0;i<draft.length;i++) pending.push({name:draft[i].name,yi:draft[i].yi,coins:draft[i].coins});
+  prevRanks = {}; // clear labels until Show Results is pressed
+  renderBoard(false); // re-render to remove labels immediately
   persist(); updatePendingUI();
   var btn=document.querySelector(".save-btn");
   var orig=btn.textContent; btn.textContent="Saved!";
@@ -423,6 +449,7 @@ function resetAll(){
   for(var i=0;i<draft.length;i++) draft[i].coins=0;
   pending=null; live=[];
   for(var i=0;i<draft.length;i++) live.push({name:draft[i].name,yi:draft[i].yi,coins:0});
+  prevRanks = {}; // clear labels
   persist(); renderBoard(false); renderEditPanel(); updatePendingUI();
 }
 
@@ -437,12 +464,15 @@ loadData();
 draft=[];
 var src2=pending||live;
 for(var i=0;i<src2.length;i++) draft.push({name:src2[i].name,yi:src2[i].yi,coins:src2[i].coins});
-// Wait for layout then render so calcTopPad gets real height
-requestAnimationFrame(function(){
+// Track previous rank for each team so we can show relevant labels
+var prevRanks = {}; // origIdx -> rank
+
+window.addEventListener("load", function(){
   renderBoard(false);
   updatePendingUI();
+  // Second pass after fonts/layout fully settle
+  setTimeout(function(){ renderBoard(false); }, 100);
 });
-// Also re-render on resize
 window.addEventListener("resize", function(){ renderBoard(false); });
 </script>
 </body>
