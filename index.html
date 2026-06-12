@@ -454,11 +454,35 @@ function resetAll(){
 }
 
 function toggleFullscreen(){
-  var fs=document.body.classList.toggle("fullscreen-mode");
-  var btn=document.getElementById("fs-btn");
-  btn.classList.toggle("active",fs);
-  btn.textContent=fs?"Exit":"Full";
+  var btn = document.getElementById("fs-btn");
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().then(function(){
+      btn.textContent = "Exit";
+      btn.classList.add("active");
+    }).catch(function(){
+      // fallback: just resize the screen div
+      document.body.classList.add("fullscreen-mode");
+      btn.textContent = "Exit";
+      btn.classList.add("active");
+    });
+  } else {
+    document.exitFullscreen().then(function(){
+      btn.textContent = "Full";
+      btn.classList.remove("active");
+    });
+  }
 }
+
+document.addEventListener("fullscreenchange", function(){
+  var btn = document.getElementById("fs-btn");
+  if(!document.fullscreenElement){
+    btn.textContent = "Full";
+    btn.classList.remove("active");
+    document.body.classList.remove("fullscreen-mode");
+  }
+  // re-render so row heights recalculate for new screen size
+  setTimeout(function(){ renderBoard(false); }, 200);
+});
 
 loadData();
 draft=[];
