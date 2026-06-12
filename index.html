@@ -206,6 +206,8 @@ body.has-pending .ep-status{display:block;}
 .action-btn.close-btn:hover{background:rgba(80,80,100,0.7);}
 
 body.fullscreen-mode .screen{position:fixed;inset:0;z-index:50;overflow-y:auto;}
+/* Real fullscreen: ensure background covers correctly */
+:fullscreen body::before, :-webkit-full-screen body::before{transform:scale(1.06);}
 </style>
 </head>
 <body>
@@ -454,35 +456,37 @@ function resetAll(){
 }
 
 function toggleFullscreen(){
+  var el = document.documentElement;
   var btn = document.getElementById("fs-btn");
-  if(!document.fullscreenElement){
-    document.documentElement.requestFullscreen().then(function(){
-      btn.textContent = "Exit";
-      btn.classList.add("active");
-    }).catch(function(){
-      // fallback: just resize the screen div
-      document.body.classList.add("fullscreen-mode");
-      btn.textContent = "Exit";
-      btn.classList.add("active");
-    });
+  var req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+  var exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+  var current = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+
+  if(!current){
+    if(req){
+      req.call(el);
+    }
   } else {
-    document.exitFullscreen().then(function(){
-      btn.textContent = "Full";
-      btn.classList.remove("active");
-    });
+    if(exit) exit.call(document);
   }
 }
 
-document.addEventListener("fullscreenchange", function(){
+function onFSChange(){
   var btn = document.getElementById("fs-btn");
-  if(!document.fullscreenElement){
+  var current = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+  if(current){
+    btn.textContent = "Exit";
+    btn.classList.add("active");
+  } else {
     btn.textContent = "Full";
     btn.classList.remove("active");
-    document.body.classList.remove("fullscreen-mode");
   }
-  // re-render so row heights recalculate for new screen size
-  setTimeout(function(){ renderBoard(false); }, 200);
-});
+  setTimeout(function(){ renderBoard(false); }, 300);
+}
+document.addEventListener("fullscreenchange", onFSChange);
+document.addEventListener("webkitfullscreenchange", onFSChange);
+document.addEventListener("mozfullscreenchange", onFSChange);
+document.addEventListener("MSFullscreenChange", onFSChange);
 
 loadData();
 draft=[];
